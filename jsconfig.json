@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@api/*": [
+        "src/api/*"
+      ],
+      "@bin/*": [
+        "src/bin/*"
+      ],
+      "@common/*": [
+        "src/common/*"
+      ],
+      "@config/*": [
+        "src/config/*"
+      ],
+      "@env/*": [
+        "src/env/*"
+      ],
+      "@modules/*": [
+        "src/modules/*"
+      ],
+      "@packages/*": [
+        "src/packages/*"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "src/**/*"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "presets": [
+    "@babel/preset-env"
+  ],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "root": [
+          "./"
+        ],
+        "alias": {
+          "@": "./src",
+          "@api": "./src/api",
+          "@bin": "./src/bin",
+          "@common": "./src/common",
+          "@config": "./src/config",
+          "@env": "./src/env",
+          "@modules": "./src/modules",
+          "@packages": "./src/packages"
+        }
+      }
+    ]
+  ]
+}
