@@ -1,7 +1,7 @@
 import amqp from 'amqplib';
 import ConfigService from '@/env';
 
-class AmqpManager {
+class RabbitmqService {
     static instance;
 
     connection = null;
@@ -10,11 +10,12 @@ class AmqpManager {
 
     amqpUrl = ConfigService.amqpConfig().url;
 
-    static getInstance() {
-        if (!AmqpManager.instance) {
-            AmqpManager.instance = new AmqpManager();
+    static async getInstance() {
+        if (!RabbitmqService.instance) {
+            RabbitmqService.instance = new RabbitmqService();
+            await RabbitmqService.instance.connect();
         }
-        return AmqpManager.instance;
+        return RabbitmqService.instance;
     }
 
     async connect() {
@@ -41,4 +42,4 @@ class AmqpManager {
     }
 }
 
-export default AmqpManager;
+export default RabbitmqService;

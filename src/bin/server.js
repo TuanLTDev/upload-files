@@ -12,8 +12,12 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import RouterConfig from '@config/router.config';
 import { applyGlobalFilter, HttpExceptionFilter, InvalidRouteFilter } from '@common/filters';
-import ConfigService from '@/env';
 import * as path from 'node:path';
+import { initQueueUtil } from '@packages/queue/utils';
+import debug from 'debug';
+import ConfigService from '@/env';
+
+const debugHelper = debug('mongoose:server');
 
 const app = express();
 
@@ -106,14 +110,16 @@ function onError(error) {
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+    debugHelper(`Listening on ${bind}`);
 }
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port, () => {
+server.listen(port, async () => {
     console.info(`Server is listening on ${port}`);
+    await initQueueUtil();
 });
 server.on('error', onError);
 server.on('listening', onListening);

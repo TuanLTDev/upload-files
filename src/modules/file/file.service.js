@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { FileSizeUtil } from '@common/utils/file-size.util';
 import { decrypt, encrypt } from '@common/helpers';
-import fs from 'fs';
+import fs from 'node:fs';
 import ConfigService from '@/env';
 
 class FileService {

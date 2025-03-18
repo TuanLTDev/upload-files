@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import { getMimeType } from '@common/helpers';
 import { NotFoundException } from '@common/exceptions';
 import { FileSizeUtil } from '@common/utils/file-size.util';
+import { DownloadProducer } from '@packages/queue/producer';
+import { QUEUE_NAME } from '@packages/queue/constants';
 import ConfigService from '@/env';
 
 class FileController {
@@ -13,6 +15,10 @@ class FileController {
 
     download = async (req, res) => {
         const listFile = req.body;
+        listFile.map(async (file) => {
+            await DownloadProducer.sendMessage(QUEUE_NAME.DOWNLOAD_IMAGE, file);
+        });
+
         const data = await this.service.preResponseForDownload(listFile);
         return ValidHttpResponse.toOkResponse(data).toResponse(res);
     };
@@ -33,7 +39,7 @@ class FileController {
         fileStream.pipe(res);
     };
 
-    resizeImage = async (req, res) => {
+    resizeImageChunk = async (req, res) => {
         const { url } = req.body;
 
         const { size: fileSize, contentType } = await this.service.getFileSizeAndContentType(url);

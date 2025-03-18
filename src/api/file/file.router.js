@@ -6,6 +6,6 @@ const router = new express.Router();
 router.post('/download', FileController.download);
 router.post('/upload', FileController.download);
 router.get('/:encryptedFilename', FileController.getFile);
-router.post('/images/resize', FileController.resizeImage);
+router.post('/images/resize', FileController.resizeImageChunk);
 
 export default router;
