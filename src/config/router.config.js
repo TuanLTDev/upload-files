@@ -6,6 +6,6 @@ import ConfigService from '@/env';
 const router = express.Router();
 
 router.use(ConfigService.appConfig().apiPrefix, ApiRouter);
-router.use('/uploads/:encryptedFilename', FileController.getFile);
+router.use('/uploads/:encryptedFilepath', FileController.getFile);
 
 export default router;

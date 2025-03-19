@@ -6,7 +6,6 @@ import { NotFoundException } from '@common/exceptions';
 import { FileSizeUtil } from '@common/utils/file-size.util';
 import { DownloadProducer } from '@packages/queue/producer';
 import { QUEUE_NAME } from '@packages/queue/constants';
-import ConfigService from '@/env';
 
 class FileController {
     constructor() {
@@ -15,24 +14,24 @@ class FileController {
 
     download = async (req, res) => {
         const listFile = req.body;
-        listFile.map(async (file) => {
-            await DownloadProducer.sendMessage(QUEUE_NAME.DOWNLOAD_IMAGE, file);
-        });
+        const listFileResponse = await this.service.preResponseForDownload(listFile);
+        listFileResponse
+            .sort((a, b) => a.fileSize - b.fileSize)
+            .map(async (file) => {
+                await DownloadProducer.sendMessage(QUEUE_NAME.DOWNLOAD_IMAGE, file);
+            });
 
-        const data = await this.service.preResponseForDownload(listFile);
-        return ValidHttpResponse.toOkResponse(data).toResponse(res);
+        return ValidHttpResponse.toOkResponse(listFileResponse).toResponse(res);
     };
 
     getFile = (req, res) => {
-        const { encryptedFilename } = req.params;
-        const originalFilename = this.service.getFileName(encryptedFilename);
-
-        const filePath = `${ConfigService.UPLOAD_FILE_DIR}/${originalFilename}`;
-        if (!fs.existsSync(filePath)) {
+        const { encryptedFilepath } = req.params;
+        const filePath = this.service.getFilePath(encryptedFilepath);
+        if (!fs.existsSync(filePath.replaceAll('\\', '/'))) {
             throw new NotFoundException('File not found');
         }
 
-        const mimeType = getMimeType(originalFilename);
+        const mimeType = getMimeType(filePath);
         res.setHeader('Content-Type', mimeType);
 
         const fileStream = fs.createReadStream(filePath);
@@ -63,6 +62,12 @@ class FileController {
         const buffers = sortedChunks.map((chunk) => chunk.data);
         res.setHeader('Content-Type', contentType);
         res.send(buffers);
+    };
+
+    uploadMany = async (req, res) => {
+        const files = req.files || req.file;
+        const results = await this.service.uploadMany(files);
+        return ValidHttpResponse.toOkResponse(results).toResponse(res);
     };
 }
 

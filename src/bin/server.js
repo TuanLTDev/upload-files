@@ -14,10 +14,8 @@ import RouterConfig from '@config/router.config';
 import { applyGlobalFilter, HttpExceptionFilter, InvalidRouteFilter } from '@common/filters';
 import * as path from 'node:path';
 import { initQueueUtil } from '@packages/queue/utils';
-import debug from 'debug';
+import { logger } from '@packages/logger';
 import ConfigService from '@/env';
-
-const debugHelper = debug('mongoose:server');
 
 const app = express();
 
@@ -110,7 +108,7 @@ function onError(error) {
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
-    debugHelper(`Listening on ${bind}`);
+    logger.info(`Listening on ${bind}`);
 }
 
 /**
@@ -118,7 +116,7 @@ function onListening() {
  */
 
 server.listen(port, async () => {
-    console.info(`Server is listening on ${port}`);
+    logger.info(`Server is listening on ${port}`);
     await initQueueUtil();
 });
 server.on('error', onError);

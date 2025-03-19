@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import { logger } from '@packages/logger';
 import ConfigService from '@/env';
 
 class RabbitmqService {
@@ -22,7 +23,7 @@ class RabbitmqService {
         if (!this.connection) {
             this.connection = await amqp.connect(this.amqpUrl);
             this.channel = await this.connection.createChannel();
-            console.log('✅ AMQP Connected');
+            logger.info('✅ AMQP Connected');
         }
     }
 
@@ -38,7 +39,7 @@ class RabbitmqService {
         await this.connection?.close();
         this.channel = null;
         this.connection = null;
-        console.log('🔴 AMQP Connection closed');
+        logger.info('🔴 AMQP Connection closed');
     }
 }
 

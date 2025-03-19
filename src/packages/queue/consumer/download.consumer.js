@@ -1,6 +1,7 @@
 import RabbitmqService from '@packages/queue/rabbitmq.service';
 import FileService from '@modules/file/file.service';
 import { EXCHANGE_NAME, ROUTING_KEY } from '@packages/queue/constants';
+import { logger } from '@packages/logger';
 
 export class DownloadConsumer {
     static service = FileService;
@@ -22,15 +23,14 @@ export class DownloadConsumer {
 
         channel.consume(queueName, async (msg) => {
             if (msg) {
-                console.log(msg);
                 const message = JSON.parse(msg.content.toString());
-                console.log(`📥 Received from queue [${queueName}]:`, message);
+                logger.info(`📥 Received from queue [${queueName}]:`, message);
                 const data = await this.service.downloadFile(message);
-                console.log('Download success:', data);
+                logger.info('Download success:', data);
                 channel.ack(msg);
             }
         });
 
-        console.log(`🚀 Consumer listening on queue: ${queueName}`);
+        logger.info(`🚀 Consumer listening on queue: ${queueName}`);
     }
 }

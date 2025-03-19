@@ -7,7 +7,7 @@ class ConfigService {
 
     static UPLOAD_FILE_DIR = `${this.ROOT_DIR}/${process.env.UPLOAD_FILE_DIR}`;
 
-    static PREFIX_FILE_URL = `${process.env.APP_HOST}/${process.env.UPLOAD_FILE_DIR}/`;
+    static PREFIX_FILE_URL = `${process.env.APP_HOST}/${process.env.UPLOAD_FILE_DIR}`;
 
     static environment() {
         return process.env.NODE_ENV || 'development';
