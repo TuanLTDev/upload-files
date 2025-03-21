@@ -10,10 +10,17 @@ const validationMessages = {
 };
 
 const EMAIL_FORMAT = /^.*@.*\.(com|net|org)$/;
+
 const PWD_FORMAT = /^.*(?=.{7,50})(?=.*\d)(?=.*[A-Z]).*$/;
+
 const FULL_NAME_FORMAT = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/;
+
 // example: full_name:ASC,createdAt:DESC,updatedAt:DESC
 const SORT_FORMAT = /^(\w+:(ASC|DESC),)*(\w+:(ASC|DESC))$/;
+
+const MONGOOSE_ID_OBJECT_FORMAT = /^[0-9a-fA-F]{24}$/;
+
+const DATE_YYYY_MM_DD_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 
 export class JoiUtils {
     static fullName = () =>
@@ -45,4 +52,18 @@ export class JoiUtils {
         Joi.string().optional().pattern(SORT_FORMAT).messages({
             'string.pattern.base': validationMessages.SORT,
         });
+
+    static date(custom = false) {
+        return custom
+            ? Joi.string().regex(DATE_YYYY_MM_DD_FORMAT)
+            : Joi.string().regex(DATE_YYYY_MM_DD_FORMAT).message('Invalid date format. Should be YYYY-MM-DD');
+    }
+
+    static objectId() {
+        return Joi.string().regex(MONGOOSE_ID_OBJECT_FORMAT);
+    }
+
+    static ObjectIds() {
+        return Joi.array().items(this.objectId());
+    }
 }

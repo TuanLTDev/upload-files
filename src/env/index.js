@@ -1,4 +1,5 @@
 import env from 'dotenv';
+import process from 'process';
 
 env.config();
 
@@ -78,6 +79,14 @@ class ConfigService {
     static amqpConfig() {
         return {
             url: process.env.AMQP_URL,
+        };
+    }
+
+    static swaggerConfig() {
+        return {
+            name: process.env.COMPANY_NAME,
+            url: process.env.COMPANY_URL,
+            email: process.env.COMPANY_EMAIL,
         };
     }
 }

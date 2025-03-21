@@ -38,3 +38,16 @@ export const getMimeType = (filename) => {
     };
     return mimeTypes[ext] || 'application/octet-stream';
 };
+
+export const getDriveImageId = (url) => {
+    const match = url.match(/[-\w]{25,}/);
+    return match ? match[0] : null;
+};
+
+export const getDownloadUrl = (url) => {
+    if (url.includes('drive.google.com')) {
+        return `https://drive.google.com/uc?export=download&id=${getDriveImageId(url)}`;
+        // return `https://lh3.googleusercontent.com/d/${getDriveImageId(url)}`;
+    }
+    return url;
+};

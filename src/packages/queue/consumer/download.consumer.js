@@ -25,8 +25,7 @@ export class DownloadConsumer {
             if (msg) {
                 const message = JSON.parse(msg.content.toString());
                 logger.info(`📥 Received from queue [${queueName}]:`, message);
-                const data = await this.service.downloadFile(message);
-                logger.info('Download success:', data);
+                await this.service.downloadFile(message);
                 channel.ack(msg);
             }
         });

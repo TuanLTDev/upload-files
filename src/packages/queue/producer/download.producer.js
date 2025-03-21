@@ -17,6 +17,5 @@ export class DownloadProducer {
             deadLetterRoutingKey: ROUTING_KEY.DEAD_LETTER_ROUTING_KEY,
         });
         channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), { persistent: true });
-        console.log(`✅ Sent to queue [${queueName}]:`, message);
     }
 }

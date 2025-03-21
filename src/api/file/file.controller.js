@@ -2,7 +2,7 @@ import FileService from '@modules/file/file.service';
 import { ValidHttpResponse } from '@common/response';
 import * as fs from 'fs';
 import { getMimeType } from '@common/helpers';
-import { NotFoundException } from '@common/exceptions';
+import { NotFoundException } from '@common/exceptions/http';
 import { FileSizeUtil } from '@common/utils/file-size.util';
 import { DownloadProducer } from '@packages/queue/producer';
 import { QUEUE_NAME } from '@packages/queue/constants';
@@ -12,7 +12,7 @@ class FileController {
         this.service = FileService;
     }
 
-    download = async (req, res) => {
+    download = async (req) => {
         const listFile = req.body;
         const listFileResponse = await this.service.preResponseForDownload(listFile);
         listFileResponse
@@ -21,10 +21,10 @@ class FileController {
                 await DownloadProducer.sendMessage(QUEUE_NAME.DOWNLOAD_IMAGE, file);
             });
 
-        return ValidHttpResponse.toOkResponse(listFileResponse).toResponse(res);
+        return ValidHttpResponse.toOkResponse(listFileResponse);
     };
 
-    getFile = (req, res) => {
+    getFile = async (req, res) => {
         const { encryptedFilepath } = req.params;
         const filePath = this.service.getFilePath(encryptedFilepath);
         if (!fs.existsSync(filePath.replaceAll('\\', '/'))) {
@@ -64,10 +64,10 @@ class FileController {
         res.send(buffers);
     };
 
-    uploadMany = async (req, res) => {
+    uploadMany = async (req) => {
         const files = req.files || req.file;
         const results = await this.service.uploadMany(files);
-        return ValidHttpResponse.toOkResponse(results).toResponse(res);
+        return ValidHttpResponse.toOkResponse(results);
     };
 }
 

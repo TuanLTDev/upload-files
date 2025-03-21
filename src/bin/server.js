@@ -6,18 +6,9 @@
  */
 
 import http from 'http';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
-import RouterConfig from '@config/router.config';
-import { applyGlobalFilter, HttpExceptionFilter, InvalidRouteFilter } from '@common/filters';
-import * as path from 'node:path';
-import { initQueueUtil } from '@packages/queue/utils';
 import { logger } from '@packages/logger';
-import ConfigService from '@/env';
-
-const app = express();
+import { initQueueUtil } from '@packages/queue/utils';
+import app from '../app';
 
 /**
  * Normalize a port into a number, string, or false.
@@ -43,31 +34,8 @@ function normalizePort(val) {
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(ConfigService.appConfig().port);
+const port = normalizePort(process.env.APP_PORT || 3000);
 app.set('port', port);
-
-/**
- * Default config
- */
-
-app.use(helmet());
-app.use(cors());
-app.use(cookieParser());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-/**
- * Inject router
- */
-
-app.use('/', RouterConfig);
-
-/**
- * Apply global filter
- */
-
-applyGlobalFilter(app, [new InvalidRouteFilter(), new HttpExceptionFilter()]);
 
 /**
  * Create HTTP server.
