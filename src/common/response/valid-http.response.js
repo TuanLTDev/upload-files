@@ -3,7 +3,14 @@ import { HttpResponse } from './http.response';
 
 export class ValidHttpResponse extends HttpResponse {
     static toOkResponse(data) {
-        return new HttpResponse(OK, data);
+        const result = {
+            timestamp: new Date(),
+            status: true,
+            statusCode: OK,
+            data: data?.data ?? data,
+            meta: data?.meta ?? undefined,
+        };
+        return new HttpResponse(OK, result);
     }
 
     static toNoContentResponse() {
@@ -11,6 +18,13 @@ export class ValidHttpResponse extends HttpResponse {
     }
 
     static toCreatedResponse(data) {
-        return new HttpResponse(CREATED, data);
+        const result = {
+            timestamp: new Date(),
+            status: true,
+            statusCode: CREATED,
+            data: data?.data ?? data,
+            meta: data?.meta ?? undefined,
+        };
+        return new HttpResponse(CREATED, result);
     }
 }

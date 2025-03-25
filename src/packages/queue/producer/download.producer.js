@@ -1,5 +1,6 @@
 import RabbitmqService from '@packages/queue/rabbitmq.service';
-import { EXCHANGE_NAME, ROUTING_KEY } from '@packages/queue/constants';
+import { logger } from '@packages/logger';
+import { CacheTTL } from '@common/utils/ttl.util';
 
 export class DownloadProducer {
     static async getChannel() {
@@ -9,13 +10,14 @@ export class DownloadProducer {
     }
 
     static async sendMessage(queueName, message) {
-        const channel = await this.getChannel();
-        await channel.assertQueue(queueName, {
-            durable: true,
-            maxLength: 5,
-            deadLetterExchange: EXCHANGE_NAME.DEAD_LETTER_EXCHANGE,
-            deadLetterRoutingKey: ROUTING_KEY.DEAD_LETTER_ROUTING_KEY,
-        });
-        channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), { persistent: true });
+        try {
+            const channel = await this.getChannel();
+            channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
+                persistent: true,
+                expiration: `${CacheTTL.HOUR}`,
+            });
+        } catch (error) {
+            logger.error(error);
+        }
     }
 }

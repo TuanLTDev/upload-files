@@ -1,7 +1,8 @@
-import { initDeadLetterQueue } from '@packages/queue/utils/init-dead-letter-queue.util';
-import { initConsumerUtil } from '@packages/queue/utils/init-consumer.util';
+import { DownloadConsumer } from '@packages/queue/consumer';
+import { QUEUE_NAME } from '@packages/queue/constants';
+import FileService from '@modules/file/file.service';
 
 export const initQueueUtil = async () => {
-    await initDeadLetterQueue();
-    await initConsumerUtil();
+    await DownloadConsumer.consumeQueue(QUEUE_NAME.DOWNLOAD_IMAGE, FileService.downloadFile);
+    await DownloadConsumer.consumeDeadLetterQueue();
 };

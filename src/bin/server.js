@@ -73,19 +73,32 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening() {
+async function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
     logger.info(`Listening on ${bind}`);
+
+    try {
+        await initQueueUtil();
+        logger.info('Queue initialized successfully');
+    } catch (error) {
+        logger.error('Failed to initialize queue:', error);
+        process.exit(1);
+    }
 }
 
 /**
  * Listen on provided port, on all network interfaces.
  */
+function startServer() {
+    try {
+        server.listen(port);
+        server.on('error', onError);
+        server.on('listening', onListening);
+    } catch (error) {
+        logger.error(error.message);
+        process.exit(1);
+    }
+}
 
-server.listen(port, async () => {
-    logger.info(`Server is listening on ${port}`);
-    await initQueueUtil();
-});
-server.on('error', onError);
-server.on('listening', onListening);
+startServer();

@@ -2,9 +2,9 @@ import axios from 'axios';
 import { FileSizeUtil } from '@common/utils/file-size.util';
 import { decrypt, encrypt } from '@common/helpers';
 import fs from 'node:fs';
-import ConfigService from '@/env';
 import sharp from 'sharp';
 import { logger } from '@packages/logger';
+import ConfigService from '@/env';
 
 class FileService {
     #logger;
@@ -56,14 +56,14 @@ class FileService {
             fileStream.write(chunk.data);
         });
 
-        fileStream.end(() => {
+        let fileResizeUrl;
+        fileStream.end(async () => {
             fileStream.close();
+            const width = 300;
+            const height = 400;
+            const fileResizePath = `${ConfigService.UPLOAD_FILE_DIR}/${width}x${height}_${fileName}`;
+            fileResizeUrl = await this.resizeImage(filePath, fileResizePath);
         });
-
-        const width = 300;
-        const height = 400;
-        const fileResizePath = `${ConfigService.UPLOAD_FILE_DIR}/${width}x${height}_${fileName}`;
-        const fileResizeUrl = await this.resizeImage(filePath, fileResizePath);
 
         return { originalName, fileName, fileUrl: url, fileResizeUrl, fileSize, mimetype };
     };

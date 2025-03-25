@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && node ./dist/bin/server.js",
     "dev": "nodemon --exec npx babel-node src/bin/server.js",
+    "kill-port": "npx kill-port",
     "clean": "if exist dist (rmdir /s/q dist) && mkdir dist",
     "build:babel": "babel ./src --out-dir dist --copy-files",
     "build": "npm run clean && npm run build:babel",
