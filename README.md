@@ -160,3 +160,10 @@ DB_DIALECT=postgres
 ```sh
 https://gdsc-boilerplate-swagger-docs-api-latest.onrender.com/
 ```
+
+
+```sh
+docker compose down
+docker image rmi upload-file-app:latest
+docker compose up -d
+```

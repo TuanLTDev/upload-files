@@ -1,5 +1,5 @@
 import FileService from '@modules/file/file.service';
-import { ValidHttpResponse } from '@common/response';
+import { InValidHttpResponse, ValidHttpResponse } from '@common/response';
 import * as fs from 'fs';
 import { getMimeType } from '@common/helpers';
 import { NotFoundException } from '@common/exceptions/http';
@@ -25,17 +25,21 @@ class FileController {
     };
 
     getFile = async (req, res) => {
-        const { encryptedFilepath } = req.params;
-        const filePath = this.service.getFilePath(encryptedFilepath);
-        if (!fs.existsSync(filePath.replaceAll('\\', '/'))) {
-            throw new NotFoundException('File not found');
+        try {
+            const { encryptedFilepath } = req.params;
+            const filePath = this.service.getFilePath(encryptedFilepath);
+            if (!fs.existsSync(filePath.replaceAll('\\', '/'))) {
+                throw new NotFoundException('File not found');
+            }
+
+            const mimeType = getMimeType(filePath);
+            res.setHeader('Content-Type', mimeType);
+
+            const fileStream = fs.createReadStream(filePath);
+            fileStream.pipe(res);
+        } catch (error) {
+            InValidHttpResponse.toBadRequestResponse(error.message).toResponse(res);
         }
-
-        const mimeType = getMimeType(filePath);
-        res.setHeader('Content-Type', mimeType);
-
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
     };
 
     resizeImageChunk = async (req, res) => {

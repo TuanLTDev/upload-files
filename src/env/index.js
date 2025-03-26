@@ -77,9 +77,18 @@ class ConfigService {
     }
 
     static amqpConfig() {
-        return {
-            url: process.env.AMQP_URL,
+        const rabbitmqConfig = {
+            protocol: 'amqp',
+            url:
+                process.env.AMQP_URL ??
+                `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASSWORD}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`,
+            user: process.env.RABBITMQ_USER,
+            password: process.env.RABBITMQ_PASSWORD,
+            host: process.env.RABBITMQ_HOST,
+            port: parseInt(process.env.RABBITMQ_PORT, 10) || 5672,
         };
+
+        return rabbitmqConfig;
     }
 
     static swaggerConfig() {

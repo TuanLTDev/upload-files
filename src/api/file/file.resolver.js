@@ -1,6 +1,5 @@
 import { MediaInterceptor } from '@modules/file/interceptor/media.interceptor';
 import { Module } from '@packages/module/module';
-import { encryptedFilePathParam } from '@modules/file/dto/encrypted-file-path.param';
 import { downLoadFileInterceptor } from '@modules/file/interceptor';
 import FileController from './file.controller';
 
@@ -32,11 +31,5 @@ export const FileResolver = Module.builder()
             method: 'post',
             controller: FileController.resizeImageChunk,
             preAuthorization: false,
-        },
-        {
-            route: '/:encryptedFilepath',
-            method: 'get',
-            params: [encryptedFilePathParam],
-            controller: FileController.getFile,
         },
     ]);

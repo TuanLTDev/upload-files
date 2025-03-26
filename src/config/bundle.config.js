@@ -1,11 +1,11 @@
 import { logger } from '@packages/logger';
 import { InvalidFilterError, InvalidResolverError } from '@common/exceptions/system';
 import swaggerUi from 'swagger-ui-express';
-import helmet from 'helmet';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import path from 'node:path';
+import helmet from 'helmet';
+import cors from 'cors';
 import FileController from '@api/file/file.controller';
 import ConfigService from '@/env';
 
@@ -84,7 +84,6 @@ export class AppBundle {
         /**
          * Setup basic express
          */
-        this.app.use(helmet());
         this.app.use(cors());
         this.app.use(cookieParser());
         this.app.use(express.json({ limit: '50mb' }));
@@ -94,6 +93,7 @@ export class AppBundle {
         this.app.use('/health', (req, res, next) => {
             res.status(200).send('OK');
         });
+        this.app.use(helmet());
 
         AppBundle.logger.info('Building initial config');
 

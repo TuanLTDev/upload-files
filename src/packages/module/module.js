@@ -93,7 +93,7 @@ export class Module {
             const data = await controller(request);
             if (!(data instanceof HttpResponse)) {
                 return InValidHttpResponse.toInternalResponse(
-                    `${data.constructor.name} is not instance of HttpResponse.` +
+                    `${data?.constructor?.name} is not instance of HttpResponse.` +
                         'Should use HttpResponse to build http response',
                 ).toResponse(response);
             }
