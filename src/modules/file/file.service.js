@@ -4,6 +4,7 @@ import { decrypt, encrypt } from '@common/helpers';
 import fs from 'node:fs';
 import sharp from 'sharp';
 import { logger } from '@packages/logger';
+import { FileNameUtil } from '@common/utils';
 import ConfigService from '@/env';
 
 class FileService {
@@ -72,7 +73,13 @@ class FileService {
 
     createFileResponse = (url, name, size, contentType) => {
         const fileExtension = contentType.split('/')[1] || 'json';
-        const fileName = `${name.replace(/\s+/g, '_')}_${Date.now()}.${fileExtension}`;
+        let fileName = FileNameUtil.getUniqueFileName(name, fileExtension);
+
+        if (!FileNameUtil.isValidFileName(fileName)) {
+            this.#logger.warn(`Invalid filename detected: ${name}`);
+            // Use a fallback name if necessary
+            fileName = `file_${Date.now()}.${fileExtension}`;
+        }
         const filePath = `${ConfigService.UPLOAD_FILE_DIR}/${fileName}`;
         const fileUrl = `${ConfigService.PREFIX_FILE_URL}/${encrypt(filePath)}`;
 

@@ -2,8 +2,11 @@ import RabbitmqService from '@packages/queue/rabbitmq.service';
 import { EXCHANGE_NAME, QUEUE_NAME, ROUTING_KEY } from '@packages/queue/constants';
 import { logger } from '@packages/logger';
 import FileService from '@modules/file/file.service';
+import { QUEUE_CONFIG } from '@packages/queue/config';
 
 export class DownloadConsumer {
+    #logger = logger;
+
     static async getChannel() {
         const rabbitmqService = await RabbitmqService.getInstance();
 
@@ -30,13 +33,40 @@ export class DownloadConsumer {
         channel.prefetch(1);
         channel.consume(queueName, async (msg) => {
             if (msg) {
+                const retryCount = msg.properties.headers?.['x-retry-count'] || 0;
+                const message = JSON.parse(msg.content.toString());
+
                 try {
-                    const message = JSON.parse(msg.content.toString());
+                    if (Number(retryCount) > QUEUE_CONFIG.MAIN_QUEUE.MAX_RETRIES) {
+                        this.#logger.error('Message failed permanently after max retries:', {
+                            message,
+                            retryCount,
+                            error: 'Max retries exceeded',
+                        });
+
+                        channel.ack(msg);
+
+                        await this.handleFailedMessage(message);
+                        return;
+                    }
+
                     await handler(message);
                     channel.ack(msg);
                 } catch (error) {
-                    logger.error('Error processing message:', error);
-                    channel.nack(msg, false, false);
+                    this.#logger.error('Error processing message:', {
+                        error,
+                        message: JSON.parse(msg.content.toString()),
+                        retryCount: msg.properties.headers?.['x-retry-count'] || 0,
+                    });
+
+                    const newHeaders = {
+                        ...msg.properties.headers,
+                        'x-retry-count': (msg.properties.headers?.['x-retry-count'] || 0) + 1,
+                    };
+
+                    // Reject the message and don't requeue if max retries reached
+                    const shouldRequeue = newHeaders['x-retry-count'] < QUEUE_CONFIG.MAIN_QUEUE.MAX_RETRIES;
+                    channel.nack(msg, false, shouldRequeue);
                 }
             }
         });
@@ -62,18 +92,73 @@ export class DownloadConsumer {
 
             channel.consume(QUEUE_NAME.DOWNLOAD_IMAGE_HOT_FIX, async (msg) => {
                 if (msg) {
+                    const retryCount = msg.properties.headers?.['x-dlq-retry-count'] || 0;
                     const message = JSON.parse(msg.content.toString());
+
                     try {
+                        if (retryCount >= QUEUE_CONFIG.DEAD_LETTER_QUEUE.MAX_RETRIES) {
+                            this.#logger.error('Message failed permanently in DLQ:', {
+                                message,
+                                retryCount,
+                                queue: QUEUE_NAME.DOWNLOAD_IMAGE_HOT_FIX,
+                            });
+
+                            channel.ack(msg);
+                            await this.handleFailedMessage(message);
+                            return;
+                        }
+
                         await FileService.downloadFile(message);
                         channel.ack(msg);
                     } catch (error) {
-                        logger.error('Error download image:', message);
+                        this.#logger.error('Error download image in DLQ:', {
+                            error,
+                            message,
+                            retryCount,
+                        });
+
+                        // Republish to DLQ with incremented retry count
+                        const newHeaders = {
+                            ...msg.properties.headers,
+                            'x-dlq-retry-count': retryCount + 1,
+                        };
+
+                        const shouldRequeue =
+                            newHeaders['x-dlq-retry-count'] < QUEUE_CONFIG.DEAD_LETTER_QUEUE.MAX_RETRIES;
+                        channel.nack(msg, false, shouldRequeue);
                     }
                 }
             });
         } catch (error) {
-            logger.error('Failed to consume dead letter queue:', error);
-            throw error;
+            this.#logger.error('Failed to consume dead letter queue:', error);
+        }
+    }
+
+    // Helper method to handle permanently failed messages
+    static async handleFailedMessage(message) {
+        try {
+            // You could implement any of these options:
+
+            // 1. Store in database
+            /*
+
+             */
+
+            // 2. Send notification
+            /*
+
+             */
+
+            // 3. Write to specific error log file
+            if (QUEUE_CONFIG.LOGGING.ENABLED) {
+                this.#logger.error('Permanent queue failure', {
+                    queue: QUEUE_NAME.DOWNLOAD_IMAGE,
+                    message,
+                    timestamp: new Date().toISOString(),
+                });
+            }
+        } catch (error) {
+            this.#logger.error('Error handling failed message:', error);
         }
     }
 }
