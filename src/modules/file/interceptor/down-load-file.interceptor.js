@@ -21,7 +21,7 @@ export const downLoadFileInterceptor = new DefaultValidatorInterceptor(
                         'url.domain': 'URL must be from an allowed domain',
                         'url.invalid': 'Invalid URL format',
                     }),
-                name: Joi.string().required().min(2).max(100).messages({
+                name: Joi.string().required().min(2).max(255).messages({
                     'any.required': 'Name is required',
                     'string.empty': 'Name cannot be empty',
                     'string.min': 'Name must be at least {#limit} characters',
