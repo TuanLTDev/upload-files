@@ -28,11 +28,11 @@ export class FileSizeUtil {
     }
 
     static format(size) {
-        if (size < this.KB) return this.bytes(size);
-        if (size < this.MB) return this.kilobytes(size);
-        if (size < this.GB) return this.megabytes(size);
-        if (size < this.TB) return this.gigabytes(size);
-        return this.terabytes(size);
+        if (size < this.KB) return `${this.bytes(size).toFixed(2)} B`;
+        if (size < this.MB) return `${this.kilobytes(size).toFixed(2)} KB`;
+        if (size < this.GB) return `${this.megabytes(size).toFixed(2)} MB`;
+        if (size < this.TB) return `${this.gigabytes(size).toFixed(2)} GB`;
+        return `${this.terabytes(size).toFixed(2)} TB`;
     }
 
     static getOptimalChunkSize = (fileSize) => {

@@ -73,6 +73,18 @@ class FileController {
         const results = await this.service.uploadMany(files);
         return ValidHttpResponse.toOkResponse(results);
     };
+
+    deleteOne = async (req) => {
+        const { encryptedFilepath } = req.params;
+        const filePath = this.service.getFilePath(encryptedFilepath);
+        if (!fs.existsSync(filePath.replaceAll('\\', '/'))) {
+            throw new NotFoundException('File not found');
+        }
+
+        await this.service.deleteOne(filePath);
+
+        return ValidHttpResponse.toNoContentResponse();
+    };
 }
 
 export default new FileController();

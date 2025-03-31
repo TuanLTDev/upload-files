@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import sharp from 'sharp';
 import { logger } from '@packages/logger';
 import { FileNameUtil } from '@common/utils';
+import { DiskSpaceUtil } from '@common/utils/disk-space.util';
+import { NotFoundException } from '@common/exceptions/http';
 import ConfigService from '@/env';
 
 class FileService {
@@ -33,6 +35,9 @@ class FileService {
 
     downloadFile = async (payload) => {
         const { url, originalName, fileName, fileSize, mimetype } = payload;
+
+        await DiskSpaceUtil.ensureSpace(ConfigService.UPLOAD_FILE_DIR, fileSize);
+
         const chunkSize = FileSizeUtil.getOptimalChunkSize(fileSize);
         const chunks = Math.ceil(fileSize / chunkSize);
 
@@ -128,6 +133,46 @@ class FileService {
     uploadMany = async (files) => {
         const tasks = files.map((file) => this.uploadOne(file));
         return Promise.all(tasks);
+    };
+
+    deleteOne = async (filePath) => {
+        const fileName = filePath.split('/').pop();
+        const directory = filePath.substring(0, filePath.lastIndexOf('/'));
+
+        const resizedPath = `${directory}/300x400_${fileName}`;
+
+        const deletedFiles = [];
+
+        if (fs.existsSync(filePath)) {
+            const stats = fs.statSync(filePath);
+            fs.unlinkSync(filePath);
+            deletedFiles.push({
+                type: 'original',
+                path: filePath,
+                size: stats.size,
+            });
+            this.#logger.info(`Deleted original file: ${fileName}`);
+        }
+
+        if (fs.existsSync(resizedPath)) {
+            const stats = fs.statSync(resizedPath);
+            fs.unlinkSync(resizedPath);
+            deletedFiles.push({
+                type: 'resized',
+                path: resizedPath,
+                size: stats.size,
+            });
+            this.#logger.info(`Deleted resized file: ${fileName}`);
+        }
+
+        if (deletedFiles.length === 0) {
+            throw new NotFoundException(`No files found for path: ${filePath}`);
+        }
+    };
+
+    deleteMany = async (files) => {
+        const tasks = files.map((file) => this.deleteOne(file));
+        await Promise.allSettled(tasks);
     };
 
     generateFileUrl = (filePath) => `${ConfigService.PREFIX_FILE_URL}/${encrypt(filePath)}`;
