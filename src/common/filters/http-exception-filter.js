@@ -7,7 +7,7 @@ export class HttpExceptionFilter {
             return new InValidHttpResponse(err.statusCode, err.errorCode, err.message, null, err.stack).toResponse(res);
         }
         if (err instanceof Error) {
-            return InValidHttpResponse.toInternalResponse(err.message).toResponse(res);
+            return InValidHttpResponse.toInternalResponse(err.message, err.stack).toResponse(res);
         }
         return next();
     }

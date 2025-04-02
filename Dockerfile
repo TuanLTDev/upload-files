@@ -27,6 +27,7 @@ WORKDIR /app
 COPY --chown=node:node --from=development /app/node_modules ./node_modules
 COPY --chown=node:node --from=development /app/src ./src
 COPY --chown=node:node --from=development /app/.babelrc ./.babelrc
+COPY --chown=node:node --from=development /app/datalutech-upload-file.json ./datalutech-upload-file.json
 
 RUN npm run build
 
@@ -48,6 +49,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/.babelrc ./.babelrc
+COPY --from=builder /app/datalutech-upload-file.json ./datalutech-upload-file.json
 
 # Start the server using the production build
 CMD [ "node", "./dist/bin/server.js" ]

@@ -17,3 +17,5 @@ src/public/css/
 package-lock.json
 
 src/uploads/*
+
+datalutech-upload-file.json

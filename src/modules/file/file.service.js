@@ -7,12 +7,15 @@ import { logger } from '@packages/logger';
 import { FileNameUtil } from '@common/utils';
 import { DiskSpaceUtil } from '@common/utils/disk-space.util';
 import { NotFoundException } from '@common/exceptions/http';
+import { StorageService } from '@packages/storage/services';
+import { STORAGE_FOLDER, STORAGE_PROVIDER } from '@packages/storage/constants';
 import ConfigService from '@/env';
 
 class FileService {
     #logger;
 
     constructor() {
+        this.storageService = new StorageService(STORAGE_PROVIDER.GOOGLE);
         this.#logger = logger;
     }
 
@@ -108,25 +111,22 @@ class FileService {
     };
 
     uploadOne = async (file) => {
-        const { originalname, mimetype, destination, filename, path, size } = file;
-        const width = 300;
-        const height = 400;
-        const fileResizePath = `${destination}/${width}x${height}_${filename}`;
-        await sharp(path, { limitInputPixels: false })
-            .resize({
-                width,
-                height,
-                fit: 'inside',
-                withoutEnlargement: true,
-            })
-            .toFile(fileResizePath);
+        const result = await this.storageService.uploadImage(file, {
+            folder: STORAGE_FOLDER.IMAGES,
+            resizeOptions: {
+                width: 300,
+                height: 400,
+                quality: 80,
+            },
+        });
+
         return {
-            originalName: originalname,
-            fileName: filename,
-            fileUrl: this.generateFileUrl(path),
-            fileSize: size,
-            mimetype,
-            fileResizeUrl: this.generateFileUrl(fileResizePath),
+            originalName: file.originalname,
+            fileName: file.filename,
+            fileUrl: result.url,
+            fileSize: file.size,
+            mimetype: file.mimetype,
+            fileResizeUrl: result.resized_url,
         };
     };
 

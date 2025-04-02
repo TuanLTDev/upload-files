@@ -6,7 +6,6 @@ import express from 'express';
 import path from 'node:path';
 import helmet from 'helmet';
 import cors from 'cors';
-import FileController from '@api/file/file.controller';
 import ConfigService from '@/env';
 
 /**
@@ -89,7 +88,6 @@ export class AppBundle {
         this.app.use(express.json({ limit: '50mb' }));
         this.app.use(express.urlencoded({ extended: false, limit: '50mb' }));
         this.app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-        this.app.use('/uploads/:encryptedFilepath', FileController.getFile);
         this.app.use('/health', (req, res, next) => {
             res.status(200).send('OK');
         });
