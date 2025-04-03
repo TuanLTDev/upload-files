@@ -16,7 +16,6 @@ export class GoogleStorageProvider extends BaseStorageProvider {
         });
 
         this.bucket = this.storage.bucket(STORAGE_CONFIG.google.bucketName);
-        this.makeBucketPublic();
     }
 
     async upload(file, options = {}) {

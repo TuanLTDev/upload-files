@@ -5,21 +5,21 @@ import fs from 'node:fs';
 import sharp from 'sharp';
 import { logger } from '@packages/logger';
 import { FileNameUtil } from '@common/utils';
-import { DiskSpaceUtil } from '@common/utils/disk-space.util';
 import { NotFoundException } from '@common/exceptions/http';
 import { StorageService } from '@packages/storage/services';
 import { STORAGE_FOLDER, STORAGE_PROVIDER } from '@packages/storage/constants';
+import { DiskSpaceUtil } from '@common/utils/disk-space.util';
 import ConfigService from '@/env';
 
 class FileService {
     #logger;
 
     constructor() {
-        this.storageService = new StorageService(STORAGE_PROVIDER.GOOGLE);
+        this.storageService = new StorageService(STORAGE_PROVIDER.LOCAL);
         this.#logger = logger;
     }
 
-    getFileSizeAndContentType = async (url) => {
+    getFileMetadata = async (url) => {
         const response = await axios.head(url);
         return {
             size: parseInt(response.headers['content-length'], 10),
@@ -68,10 +68,12 @@ class FileService {
         let fileResizeUrl;
         fileStream.end(async () => {
             fileStream.close();
-            const width = 300;
-            const height = 400;
-            const fileResizePath = `${ConfigService.UPLOAD_FILE_DIR}/${width}x${height}_${fileName}`;
-            fileResizeUrl = await this.resizeImage(filePath, fileResizePath);
+            if (mimetype.startsWith('image/')) {
+                const width = 300;
+                const height = 400;
+                const fileResizePath = `${ConfigService.UPLOAD_FILE_DIR}/${width}x${height}_${fileName}`;
+                fileResizeUrl = await this.resizeImage(filePath, fileResizePath);
+            }
         });
 
         return { originalName, fileName, fileUrl: url, fileResizeUrl, fileSize, mimetype };
@@ -102,7 +104,7 @@ class FileService {
     preResponseForDownload = async (listFile) => {
         const results = await Promise.all(
             listFile.map(async (file) => {
-                const { size, contentType } = await this.getFileSizeAndContentType(file.url);
+                const { size, contentType } = await this.getFileMetadata(file.url);
                 return this.createFileResponse(file.url, file.name, size, contentType);
             }),
         );

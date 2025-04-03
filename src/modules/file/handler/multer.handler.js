@@ -61,7 +61,14 @@ export class MulterHandler {
 
     getFileName(file) {
         const originalName = file.originalname.substring(0, file.originalname.lastIndexOf('.')) || file.originalname;
-        return `${originalName}_${Date.now()}${path.extname(file.originalname)}`;
+        const fileName = originalName
+            .replace(/\.\./g, '')
+            .replace(/[^a-zA-Z0-9-_\\.]/g, '_')
+            .replace(/_{2,}/g, '_')
+            .replace(/^[.-]+|[.-]+$/g, '')
+            .toLowerCase();
+
+        return `${fileName}_${Date.now()}${path.extname(file.originalname)}`;
     }
 
     getHandler() {
